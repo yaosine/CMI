@@ -7,9 +7,8 @@
  *
  * 用于定义本模块对外开放的接口
  *
- * @copyright (c) 2009-2014 Innet Inc
- * @author E:\pan\pan\code\cmi
-yaosine@gmail.com
+ * @copyright (c) 2009-2014 Yaosine.com
+ * @author yaosine@gmail.com
  *
  */
 
@@ -17,21 +16,25 @@ class cmi_demo extends cmi{
 
     function demo(){
 
+        //调用本模块接口
         $this->demo1();
 
+        //调用其它模块接口（单个）
         $this->mod('demo2')->demo2();
+
+        //调用其它模块接口（多个）
         $this->mod('demo2');
         $this->demo2->demo2();
-
-        $this->config_demo();
-
-        echo "<hr>";
+        
+        //调用模块模型接口
         $this->model_demo();
 
-        echo "<hr>";
+        //调用模块其它模型接口
         $this->other_model_demo();
 
-        echo "demo";
+        //获取模块配置
+        $this->config_demo();
+        
     }
 
     function demo1(){
