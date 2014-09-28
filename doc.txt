@@ -1,4 +1,4 @@
-#CMI: Common Module Interface 公用模块接口
+﻿#CMI: Common Module Interface 公用模块接口
 
 
 ##调用方法
