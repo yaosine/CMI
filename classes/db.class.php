@@ -14,17 +14,16 @@ class cmi_db extends cmi{
 
 	var $connection;
 	var $query_id = '';
-	var $sql_time = 0;
-	var $debug = 0;
 	var $db_host = '';
 	var $db_port = 3306;
 	var $db_user = '';
 	var $db_password = '';
 	var $db_database = '';
 	var $sql_debug = 0;
+	var $mysqli = 0;
 
 	function cmi_db($unit = null){
-		
+		if(strnatcasecmp(PHP_VERSION, '5.2.9') >= 0) $this->mysqli = 1;
 	}
 
 	/**
@@ -36,7 +35,7 @@ class cmi_db extends cmi{
 		$database_unit = $this->load_config('db');
 		$conf = $database_unit[$unit];
 		if($conf){
-			if(!$this->$unit){
+			if(!isset($this->$unit)){
 				$this->db_port = $conf['port'];
 				$this->db_host = $conf['host'];
 				$this->db_user = $conf['user'];
@@ -51,6 +50,19 @@ class cmi_db extends cmi{
 	}
 
 	function connect(){
+
+		//mysqli
+		if($this->mysqli == 1){
+			if (!$this->connection || !@mysqli_ping($this->connection)) {
+				@mysqli_close($this->connection);
+				$this->connection = mysqli_connect($this->db_host.':'.$this->db_port, $this->db_user, $this->db_password, $this->db_database);
+				if(mysqli_connect_errno($this->connection)) {
+					$this->error('Cannot connect to database host (' . $this->db_host . ') by user (' . $this->db_user . '). at database:'.$this->db_database);
+				}
+			}
+			return;
+		}
+
 		if (!$this->connection || !@mysql_ping($this->connection)) {
 			@mysql_close($this->connection);
 			$this->connection = mysql_connect($this->db_host.':'.$this->db_port, $this->db_user, $this->db_password,true);
@@ -71,20 +83,22 @@ class cmi_db extends cmi{
 	// Execute an SQL query.
 	/*-------------------------------------------------------------------------*/
 	function query($sqlstr,$is_echo=true){
+		
 		$this->connect();
-		$this->query_id = @mysql_query($sqlstr, $this->connection);
-		//debug
-		if($_GET['debug'] == 100) echo "$sqlstr";
-		if($this->query_id){
-			return $this->query_id;
-		}
+
+		//mysqli
+		if($this->mysqli == 1) $this->query_id = @mysqli_query($this->connection, $sqlstr);
+		else $this->query_id = @mysql_query($sqlstr, $this->connection);
+		
+		if($this->sql_debug == 1) echo "$sqlstr";
+		if($this->query_id) return $this->query_id;
 		else {
 			if($is_echo === true) {
 				$exit = true;
 			} else {
 				$exit = false;
 			}
-			$this->error(sprintf("Invalid SQL@%s:%s [%s] %.256s:%s\n" ,$_SERVER["SERVER_ADDR"], date('Y-m-d G:i:s'),  $_SERVER['PHP_SELF'], $sqlstr, is_resource($this->connection) ? mysql_error($this->connection) : mysql_error()), $exit);
+			$this->error(sprintf("Invalid SQL@%s %s [%s] %.256s:%s\n" ,$_SERVER["SERVER_ADDR"], date('Y-m-d G:i:s'),  $_SERVER['PHP_SELF'], $sqlstr, is_resource($this->connection) ? mysql_error($this->connection) : mysql_error()), $exit);
 		}
 		return false;
 	}
@@ -97,7 +111,7 @@ class cmi_db extends cmi{
 	/*-------------------------------------------------------------------------*/
 	function get_inc_id(){
 		$this->connect();
-		return mysql_insert_id($this->connection);
+		return $this->mysqli == 1 ? mysqli_insert_id($this->connection) : mysql_insert_id($this->connection);
 	}
 
 
@@ -115,20 +129,28 @@ class cmi_db extends cmi{
 		$this->connect();
 		$result = $this->query($sqlstr . " LIMIT 1", $this->connection);
 
-		if (!is_resource($result) || mysql_num_rows($result) == 0){
-			return NULL;
+		//mysqli
+		if($this->mysqli == 1){
+			if (mysqli_num_rows($result) == 0) return NULL;
+			if (mysqli_num_fields($result) <= 1){
+				$arr = mysqli_fetch_row($result);
+				mysqli_free_result($result);
+				return $arr[0];
+			}
+			$arr = mysqli_fetch_array($result);
+			mysqli_free_result($result);
+			return $arr;
 		}
-
+		
+		if (!is_resource($result) || mysql_num_rows($result) == 0) return NULL;
 		if (mysql_num_fields($result) <= 1){
 			$arr = mysql_fetch_row($result);
 			mysql_free_result($result);
 			return $arr[0];
 		}
-		else{
-			$arr = mysql_fetch_array($result);
-			mysql_free_result($result);
-			return $arr;
-		}
+		$arr = mysql_fetch_array($result);
+		mysql_free_result($result);
+		return $arr;
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -139,6 +161,20 @@ class cmi_db extends cmi{
 	function fetch_array($id = NULL){
 		$this->connect();
 		$queryId = $id ? $id : $this->query_id;
+
+		//mysqli
+		if($this->mysqli == 1) {
+			if($queryId) {
+				if($id) return mysqli_fetch_array($queryId);
+				$data = array();
+				while($r = mysqli_fetch_array($queryId)) {
+					$data[] = $r;		
+				}
+				return $data;
+			}
+			return NULL;
+		}
+
 		if(is_resource($queryId)) {
 			if($id) return mysql_fetch_array($queryId);
 			$data = array();
@@ -147,9 +183,7 @@ class cmi_db extends cmi{
 			}
 			return $data;
 		}
-		else{
-			return NULL;
-		}
+		return NULL;
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -160,12 +194,24 @@ class cmi_db extends cmi{
 	function fetch_assoc($id = NULL){
 		$this->connect();
 		$queryId = $id ? $id : $this->query_id;
+
+		//mysqli
+		if($this->mysqli == 1) {
+			if($queryId) {
+				if($id) return mysqli_fetch_assoc($queryId);
+				$data = array();
+				while($r = mysqli_fetch_assoc($queryId)) {
+					$data[] = $r;		
+				}
+				return $data;
+			}
+			return NULL;
+		}
+
 		if(is_resource($queryId)){
 			return 	mysql_fetch_assoc($queryId);
 		}
-		else{
-			return NULL;
-		}		
+		return NULL;
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -176,12 +222,17 @@ class cmi_db extends cmi{
 	function fetch_row($id = NULL){
 		$this->connect();
 		$queryId = $id ? $id : $this->query_id;
+
+		//mysqli
+		if($this->mysqli == 1) {
+			if($queryId) return mysqli_fetch_row($queryId);
+			return NULL;
+		}
+
 		if(is_resource($queryId)) {
 			return 	mysql_fetch_row($queryId);
 		} 
-		else {
-			return NULL;
-		}				
+		return NULL;	
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -192,11 +243,17 @@ class cmi_db extends cmi{
 	function fetch_object($id = NULL){
 		$this->connect();
 		$queryId = $id ? $id : $this->query_id;
+
+		//mysqli
+		if($this->mysqli == 1) {
+			if($queryId) return mysqli_fetch_object($queryId);
+			return NULL;
+		}
+
 		if(is_resource($queryId)) {
 			return 	mysql_fetch_object($queryId);
-		} else {
-			return NULL;
-		}						
+		}
+		return NULL;			
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -207,12 +264,17 @@ class cmi_db extends cmi{
 	function num_rows($id = NULL){
 		$this->connect();
 		$queryId = $id ? $id : $this->query_id;
+
+		//mysqli
+		if($this->mysqli == 1) {
+			if($queryId) return mysqli_num_rows($queryId);
+			return 0;
+		}
+
 		if(is_resource($queryId)) {
 			return 	mysql_num_rows($queryId);
 		} 
-		else {
-			return 0;
-		}								
+		return 0;							
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -221,7 +283,7 @@ class cmi_db extends cmi{
 	// Returns number of affected rows.
 	/*-------------------------------------------------------------------------*/
 	function affected_rows(){
-		return mysql_affected_rows($this->connection);
+		return $this->mysqli == 1 ? mysqli_affected_rows($this->connection) : mysql_affected_rows($this->connection);
 	}
 
 	/*-------------------------------------------------------------------------*/
@@ -231,7 +293,7 @@ class cmi_db extends cmi{
 	/*-------------------------------------------------------------------------*/
 	function close_database(){
 		if($this->connection){
-			$return = @mysql_close($this->connection);
+			$return = $this->mysqli == 1 ? @mysqli_close($this->connection) : @mysql_close($this->connection);
 			$this->connection = false;
 			return $return;
 		}
@@ -243,8 +305,8 @@ class cmi_db extends cmi{
 	// ------------------
 	// Record an error message and crash.
 	/*-------------------------------------------------------------------------*/
-	function error($msg,$exit=true){
-		$errno = mysql_errno();
+	function error($msg, $exit=true){
+		$errno = $this->mysqli == 1 ? mysqli_errno($this->connection) : mysql_errno();
 		$url = $_SERVER['HTTP_HOST']."/".$_SERVER['REQUEST_URI'];
 		$url = base64_encode($url);
 		//$msg = base64_encode($msg);

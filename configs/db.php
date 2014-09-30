@@ -17,7 +17,7 @@ return array (
         'port' => '3306',
         'user' => 'root',
         'pwd' => '',
-        'db' => 'test',
+        'db' => 'cmi',
         'pconnect' => 0,
     ),
 
@@ -27,7 +27,7 @@ return array (
         'port' => '3306',
         'user' => 'root',
         'pwd' => '',
-        'db' => 'user',
+        'db' => 'cmi',
         'pconnect' => 0,
     ),
     'MDB' => array(
@@ -35,7 +35,7 @@ return array (
         'port' => '3306',
         'user' => 'root',
         'pwd' => '',
-        'db' => 'user',
+        'db' => 'cmi',
         'pconnect' => 0,
     ),
 
@@ -45,7 +45,7 @@ return array (
         'port' => '3306',
         'user' => 'root',
         'pwd' => '',
-        'db' => 'session',
+        'db' => 'CMI',
         'pconnect' => 0,
     ),
     'MDB_SESSION' => array(
@@ -53,7 +53,7 @@ return array (
         'port' => '3306',
         'user' => 'root',
         'pwd' => '',
-        'db' => 'session',
+        'db' => 'CMI',
         'pconnect' => 0,
     ),
 

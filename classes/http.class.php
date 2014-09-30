@@ -73,9 +73,8 @@ class cmi_http extends cmi{
 	function request($url, $referer = '', $limit = 0, $timeout = 30, $block = TRUE) {
 		$matches = parse_url($url);
 		$host = $matches['host'];
-		$path = $matches['path'] ? $matches['path'].($matches['query'] ? '?'.$matches['query'] : '') : '/';
-		$port = $matches['port'] ? $matches['port'] : 80;
-		if($referer == '') $referer = URL;
+		$path = isset($matches['path']) ? $matches['path'].(isset($matches['query']) ? '?'.$matches['query'] : '') : '/';
+		$port = isset($matches['port']) ? $matches['port'] : 80;
 		$out = "$this->method $path HTTP/1.1\r\n";
 		$out .= "Accept: */*\r\n";
 		$out .= "Referer: $referer\r\n";

@@ -15,7 +15,7 @@
 class cmi_model_demo2 extends cmi{
 
     function demo(){
-        echo "model_demo111";
+        echo "model_demo2";
     }
 }
 

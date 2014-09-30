@@ -12,7 +12,7 @@
 
 class cmi_session extends cmi {
 
-    private $domian = '.inzhan.com';
+    private $domian = '.yaosine.com';
     private $life_time = '1800';
     private $db_table = 'session';
     private $db_handle;

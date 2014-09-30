@@ -12,20 +12,15 @@
  *
  */
 
-class cmi_demo2 extends cmi{
+class cmi_demo2 extends cmi_module{
 
-    function demo2(){
+    function demo(){
         echo "demo2";
-        $sdb = $this->db->load('SDB');
-        $row = $sdb->result('select count(*) from user');
-        var_dump($row);
     }
 
-    function http_demo($a, $b, $c){
-        echo "http_demo";
-        echo '$c :';
-        echo var_export($c);
-		echo "http_demo ok!";
+    //demo2
+    function demo2(){
+        return 'demo2 return';
     }
 }
 

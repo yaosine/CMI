@@ -11,10 +11,10 @@
  * @author yaosine@gmail.com
  *
  */
-class cmi_model_demo_other extends cmi{
+class cmi_model_demo_other extends cmi_module{
     
     function demo(){
-        echo "demo_other";
+        echo "other_model_demo end";
     }
 }
 
