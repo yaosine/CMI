@@ -88,12 +88,15 @@ class cmi{
 	 * 调用HTTP接口
 	 * @param string $m 模块名
 	 * @param array $args 参数
+	 * @param string $ip 参数
 	 * @return object
 	 */
-	function call_http($args=array()) {
+	function call_http($args=array(), $ip='') {
 		$this->mod('http');
 		$data['args'] = json_encode($args);
-		$rs = $this->http->post(CMI_HTTP_URL, $data);
+		if(!$ip) $http_url = CMI_HTTP_URL;
+		else $http_url = 'http://'.$ip.'/CMI/';
+		$rs = $this->http->post($http_url, $data);
 		if($rs['code'] == 1) return json_decode($rs['data']);
 	}
 

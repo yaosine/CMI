@@ -39,17 +39,20 @@ switch ($func) {
 		
 		//HTTP方式调用单个接口
 		$data = array(
-			array('demo', 'demo2', 'args1', 'args2', 'args3'),//模块名，接口名，参数1，参数2，参数3
+			//模块名，接口名，参数1，参数2，参数3
+			array('demo', 'demo2', 'args1', 'args2', 'args3'),
 		);
 		$rs = $cmi->call_http($data);//远程调用接口
 		var_dump($rs);
 
 		//HTTP方式调用多个接口
 		$data = array(
-			array('demo', 'demo2', 'args1', 'args2', 'args3'),//模块名，接口名，参数1，参数2，参数3
+			//模块名，接口名，参数1，参数2，参数3
+			array('demo', 'demo2', 'args1', 'args2', 'args3'),
 			array('demo2', 'demo2', 'args'),
 		);
 		$rs = $cmi->call_http($data);//合并HTTP请求
+		//$rs = $cmi->call_http($data, '127.0.0.1');//指定远程机器
 		var_dump($rs);
 		
 		break;
@@ -60,6 +63,27 @@ switch ($func) {
 		$rs = $cmi->http->get('http://127.0.0.1/CMI/?mods=demo&func=demo2');
 		if($rs['code'] == 1) var_dump($rs['data']);
 		$cmi->debug($rs);
+		break;
+
+	case 'mem':
+		//Memcache
+		$cmi->mod('mem');
+		
+		//memcache
+		$mem = $cmi->mem->load('MEM_ONE');//单台连接
+		//$mem = $cmi->mem->load('MEM_POOL');//连接池
+		$mem->set('key1', 'key11');
+		$rs = $mem->get('key1');
+		var_dump($rs);
+
+		/*
+		//memcached
+		$mem = $cmi->mem->load_memcached('MEM_ONE');
+		$mem->set('key1', 'key11');
+		$rs = $mem->get('key1');
+		var_dump($rs);
+		*/
+
 		break;
 
 	default:
