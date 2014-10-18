@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Cmi by yaosine</title>
+    <title>CMI by yaosine</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
@@ -17,7 +17,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>Cmi</h1>
+        <h1>CMI</h1>
         <p>Common Module Interface</p>
         <p class="view"><a href="https://github.com/yaosine/CMI">View the Project on GitHub <small>yaosine/CMI</small></a></p>
         <ul>
@@ -28,41 +28,145 @@
       </header>
       <section>
         <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to use CMI.</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+#CMI:公用模块接口
+>CMI：Common Module Interface
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+CMI是一个超轻量级的PHP框架，适合多功能、高并发Web系统开发
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+##功能特性
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+* 轻量
+	* 超轻量级框架
+	* 速度与性能并存
+* 模块化
+	* 高效率的模块化开发
+		* 子系统分离开发
+		* 模块间轻松引用
+		* 业务逻辑与数据处理分离
+	* 降低模块间的耦合度
+		* 减少模块间的影响，防止对某一模块修改所引起的水波效应
+* 远程调用
+	* 降低故障风险
+		* 单个业务宕机不影响其它业务
+	* 接口合并请求
+		* 提升速度
+		* 减少带宽
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+##目录结构
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+* classes `公用类`
+* configs `公用配置`
+* modules `公用模块`
+    *  demo `演示模块`
+        * config.php 模块配置文件
+        * interface.php 模块接口定义 
+        * model.php 模块数据模型
+        * other.model.php 模块其它模型
+    *  demo2 `演示模块2`
+        * config.php 模块配置文件
+        * interface.php 模块接口定义 
+        * model.php 模块数据模型
+* tools `工具类`
+* cmi.php 程序入口
+* index.php 远程调用入口
+* debug.php 调试文件
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+##调用方法
+
+    //本地调用
+	case 'local':
+
+		//调用本地单个接口
+		$cmi->mod('demo');
+		$rs = $cmi->demo->demo2();
+		$cmi->debug($rs);
+
+		//调用本地多个接口
+		$cmi->mod('demo', 'demo2');
+		$cmi->demo->demo1();
+		$rs = $cmi->demo2->demo();
+		$cmi->debug($rs);
+		break;
+
+	//远程调用
+	case 'http':
+		
+		//HTTP方式调用单个接口
+		$data = array(
+			//模块名，接口名，参数1，参数2，参数3
+			array('demo', 'demo2', 'args1', 'args2', 'args3')
+		);
+		$rs = $cmi->call_http($data);//远程调用接口
+		var_dump($rs);
+
+		//HTTP方式调用多个接口
+		$data = array(
+			//模块名，接口名，参数1，参数2，参数3
+			array('demo', 'demo2', 'args1', 'args2', 'args3'),
+			array('demo2', 'demo2', 'args'),
+		);
+		$rs = $cmi->call_http($data);//合并HTTP请求
+		var_dump($rs);
+		
+		break;
+
+
+
+
+
+
+
+##代码示例
+
+    case '1':
+	    //调用本模块接口
+	    $this->demo1();
+	    break;
+	
+	case '2':
+	    //调用其它模块接口（单个）
+	    $this->mod('demo2')->demo();
+	    break;
+	
+	case '3':
+	    //调用其它模块接口（多个）
+	    $this->mod('demo1', 'demo2');
+	    //$this->demo1->demo2();
+	    $this->demo2->demo2();
+	    break;
+	
+	case '4':
+	    //调用模块默认模型接口
+	    $this->model_demo();
+	    break;
+	
+	case '5':
+	    //调用模块其它模型接口
+	    $this->other_model_demo();
+	    break;
+	
+	case '6':
+	    //数据库操作:action=query,insert,update,delete
+	    $this->db_demo();
+	    break;
+	
+	case '7':
+	    //获取模块配置
+	    $this->config_demo();
+	    break;
+
+
       </section>
     </div>
     <footer>
       <p>Project maintained by <a href="https://github.com/yaosine">yaosine</a></p>
-      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+      <p></p>
     </footer>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     
